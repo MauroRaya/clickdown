@@ -10,7 +10,18 @@ app.MapGet("/api/ping", () => "pong");
 app.MapGet("/api/user", (AppDbContext context) =>
 {
     var usersDb = context.Users.ToList();
-    return Results.Ok(usersDb);
+
+    var usersDto = new List<UserDto>();
+
+    foreach (var user in usersDb)
+    {
+        usersDto.Add(new UserDto {
+            Id = user.Id,
+            Username = user.Username
+        });
+    }
+
+    return Results.Ok(usersDto);
 });
 
 app.MapGet("/api/user/{id}", (AppDbContext context, int id) =>
@@ -22,9 +33,14 @@ app.MapGet("/api/user/{id}", (AppDbContext context, int id) =>
         return Results.NotFound();
     }
 
-    return Results.Ok(userDb);
+    return Results.Ok(new UserDto
+    {
+        Id = userDb.Id,
+        Username = userDb.Username
+    });
 });
 
+//add hashing
 app.MapPost("api/user", (AppDbContext context, UserViewModel user) =>
 {
     var newUser = new User
@@ -47,11 +63,11 @@ app.MapPut("/api/user/{id}", (AppDbContext context, int id, UserViewModel user) 
     {
         return Results.NotFound();
     }
-    
+
     userDb.Username = user.Username;
     userDb.Password = user.Password;
     context.SaveChanges();
-    
+
     return Results.Ok(userDb);
 });
 
