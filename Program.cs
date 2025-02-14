@@ -40,19 +40,22 @@ app.MapGet("/api/user/{id}", (AppDbContext context, int id) =>
     });
 });
 
-//add hashing
 app.MapPost("api/user", (AppDbContext context, UserViewModel user) =>
 {
+    var inputBytes = Encoding.UTF8.GetBytes(user.Password);
+    var inputHash = SHA256.HashData(inputBytes);
+    var hashedPassword = Convert.ToHexString(inputHash);
+    
     var newUser = new User
     {
         Username = user.Username,
-        Password = user.Password,
+        Password = hashedPassword
     };
 
     context.Users.Add(newUser);
     context.SaveChanges();
 
-    return Results.Created($"/api/user/{newUser.Id}", user);
+    return Results.Created($"/api/user/{newUser.Id}", newUser);
 });
 
 app.MapPut("/api/user/{id}", (AppDbContext context, int id, UserViewModel user) =>
@@ -64,8 +67,12 @@ app.MapPut("/api/user/{id}", (AppDbContext context, int id, UserViewModel user) 
         return Results.NotFound();
     }
 
+    var inputBytes = Encoding.UTF8.GetBytes(user.Password);
+    var inputHash = SHA256.HashData(inputBytes);
+    var hashedPassword = Convert.ToHexString(inputHash);
+
     userDb.Username = user.Username;
-    userDb.Password = user.Password;
+    userDb.Password = hashedPassword;
     context.SaveChanges();
 
     return Results.Ok(userDb);
@@ -87,3 +94,7 @@ app.MapDelete("/api/user/{id}", (AppDbContext context, int id) =>
 });
 
 app.Run();
+
+//separate into controller
+//create hash service
+//maybe a service vm -> user and user -> dto?
