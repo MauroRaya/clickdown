@@ -5,7 +5,8 @@ namespace clickdown.Controllers;
 public class UserController : Controller
 {
     [HttpGet]
-    public IResult Get(AppDbContext contexto)
+    public IResult Get(
+        [FromServices] AppDbContext contexto)
     {
         var usersDb = contexto.Users.ToList();
 
@@ -24,9 +25,11 @@ public class UserController : Controller
     }
 
     [HttpGet("{id}")]
-    public IResult GetById(AppDbContext context, int id)
+    public IResult GetById(
+        [FromServices] AppDbContext contexto,
+        [FromRoute] int id)
     {
-        var userDb = context.Users.Find(id);
+        var userDb = contexto.Users.Find(id);
 
         if (userDb is null)
         {
@@ -41,7 +44,9 @@ public class UserController : Controller
     }
 
     [HttpPost]
-    public IResult Post(AppDbContext context, UserViewModel user)
+    public IResult Post(
+        [FromServices] AppDbContext contexto,
+        [FromBody] UserViewModel user)
     {
         var inputBytes = Encoding.UTF8.GetBytes(user.Password);
         var inputHash = SHA256.HashData(inputBytes);
@@ -53,16 +58,19 @@ public class UserController : Controller
             Password = hashedPassword
         };
 
-        context.Users.Add(newUser);
-        context.SaveChanges();
+        contexto.Users.Add(newUser);
+        contexto.SaveChanges();
 
         return Results.Created($"/api/user/{newUser.Id}", newUser);
     }
 
     [HttpPut("{id}")]
-    public IResult Put(AppDbContext context, int id, UserViewModel user)
+    public IResult Put(
+        [FromServices] AppDbContext contexto,
+        [FromRoute] int id,
+        [FromBody] UserViewModel user)
     {
-        var userDb = context.Users.Find(id);
+        var userDb = contexto.Users.Find(id);
 
         if (userDb is null)
         {
@@ -75,23 +83,25 @@ public class UserController : Controller
 
         userDb.Username = user.Username;
         userDb.Password = hashedPassword;
-        context.SaveChanges();
+        contexto.SaveChanges();
 
         return Results.Ok(userDb);
     }
 
     [HttpDelete("{id}")]
-    public IResult Delete(AppDbContext context, int id)
+    public IResult Delete(
+        [FromServices] AppDbContext contexto,
+        [FromRoute] int id)
     {
-        var userDb = context.Users.Find(id);
+        var userDb = contexto.Users.Find(id);
 
         if (userDb is null)
         {
             return Results.NotFound();
         }
 
-        context.Users.Remove(userDb);
-        context.SaveChanges();
+        contexto.Users.Remove(userDb);
+        contexto.SaveChanges();
 
         return Results.Ok($"Usuario com ID {id} excluido com sucesso!");
     }
