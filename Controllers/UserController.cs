@@ -4,11 +4,17 @@ namespace clickdown.Controllers;
 [ApiController]
 public class UserController : Controller
 {
-    [HttpGet]
-    public IResult Get(
-        [FromServices] AppDbContext contexto)
+    private AppDbContext _context;
+
+    public UserController(AppDbContext context)
     {
-        var usersDb = contexto.Users.ToList();
+        _context = context;
+    }
+    
+    [HttpGet]
+    public IResult Get()
+    {
+        var usersDb = _context.Users.ToList();
 
         var usersDto = new List<UserDto>();
 
@@ -26,10 +32,9 @@ public class UserController : Controller
 
     [HttpGet("{id}")]
     public IResult GetById(
-        [FromServices] AppDbContext contexto,
         [FromRoute] int id)
     {
-        var userDb = contexto.Users.Find(id);
+        var userDb = _context.Users.Find(id);
 
         if (userDb is null)
         {
@@ -45,12 +50,9 @@ public class UserController : Controller
 
     [HttpPost]
     public IResult Post(
-        [FromServices] AppDbContext contexto,
         [FromBody] UserViewModel user)
     {
-        var inputBytes = Encoding.UTF8.GetBytes(user.Password);
-        var inputHash = SHA256.HashData(inputBytes);
-        var hashedPassword = Convert.ToHexString(inputHash);
+        string hashedPassword = HashingService.GenerateHashedPassword(user.Password);
 
         var newUser = new User
         {
@@ -58,50 +60,46 @@ public class UserController : Controller
             Password = hashedPassword
         };
 
-        contexto.Users.Add(newUser);
-        contexto.SaveChanges();
+        _context.Users.Add(newUser);
+        _context.SaveChanges();
 
         return Results.Created($"/api/user/{newUser.Id}", newUser);
     }
 
     [HttpPut("{id}")]
     public IResult Put(
-        [FromServices] AppDbContext contexto,
         [FromRoute] int id,
         [FromBody] UserViewModel user)
     {
-        var userDb = contexto.Users.Find(id);
+        var userDb = _context.Users.Find(id);
 
         if (userDb is null)
         {
             return Results.NotFound();
         }
-
-        var inputBytes = Encoding.UTF8.GetBytes(user.Password);
-        var inputHash = SHA256.HashData(inputBytes);
-        var hashedPassword = Convert.ToHexString(inputHash);
+        
+        string hashedPassword = HashingService.GenerateHashedPassword(user.Password);
 
         userDb.Username = user.Username;
         userDb.Password = hashedPassword;
-        contexto.SaveChanges();
+        _context.SaveChanges();
 
         return Results.Ok(userDb);
     }
 
     [HttpDelete("{id}")]
     public IResult Delete(
-        [FromServices] AppDbContext contexto,
         [FromRoute] int id)
     {
-        var userDb = contexto.Users.Find(id);
+        var userDb = _context.Users.Find(id);
 
         if (userDb is null)
         {
             return Results.NotFound();
         }
 
-        contexto.Users.Remove(userDb);
-        contexto.SaveChanges();
+        _context.Users.Remove(userDb);
+        _context.SaveChanges();
 
         return Results.Ok($"Usuario com ID {id} excluido com sucesso!");
     }
