@@ -1,7 +1,11 @@
+using clickdown;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=Data/app.db"));
+
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddControllers();
 

@@ -4,65 +4,38 @@ namespace clickdown.Controllers;
 [ApiController]
 public class UserController : Controller
 {
-    private AppDbContext _context;
+    private UserService _userService;
 
-    public UserController(AppDbContext context)
+    public UserController(UserService userService)
     {
-        _context = context;
+        _userService = userService;
     }
-    
+
     [HttpGet]
     public IResult Get()
     {
-        var usersDb = _context.Users.ToList();
-
-        var usersDto = new List<UserDto>();
-
-        foreach (var user in usersDb)
-        {
-            usersDto.Add(new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username
-            });
-        }
-
-        return Results.Ok(usersDto);
+        List<UserDto> users = _userService.Get();
+        return Results.Ok(users);
     }
 
     [HttpGet("{id}")]
     public IResult GetById(
         [FromRoute] int id)
     {
-        var userDb = _context.Users.Find(id);
-
-        if (userDb is null)
+        UserDto? user = _userService.GetById(id);
+        if (user is null)
         {
             return Results.NotFound();
         }
 
-        return Results.Ok(new UserDto
-        {
-            Id = userDb.Id,
-            Username = userDb.Username
-        });
+        return Results.Ok(user);
     }
 
     [HttpPost]
     public IResult Post(
         [FromBody] UserViewModel user)
     {
-        string hashedPassword = HashingService.GenerateHashedPassword(user.Password);
-
-        var newUser = new User
-        {
-            Username = user.Username,
-            Password = hashedPassword
-        };
-
-        _context.Users.Add(newUser);
-        _context.SaveChanges();
-
+        User newUser = _userService.Add(user);
         return Results.Created($"/api/user/{newUser.Id}", newUser);
     }
 
@@ -71,36 +44,15 @@ public class UserController : Controller
         [FromRoute] int id,
         [FromBody] UserViewModel user)
     {
-        var userDb = _context.Users.Find(id);
-
-        if (userDb is null)
-        {
-            return Results.NotFound();
-        }
-        
-        string hashedPassword = HashingService.GenerateHashedPassword(user.Password);
-
-        userDb.Username = user.Username;
-        userDb.Password = hashedPassword;
-        _context.SaveChanges();
-
-        return Results.Ok(userDb);
+        _userService.Update(id, user);
+        return Results.NoContent();
     }
 
     [HttpDelete("{id}")]
     public IResult Delete(
         [FromRoute] int id)
     {
-        var userDb = _context.Users.Find(id);
-
-        if (userDb is null)
-        {
-            return Results.NotFound();
-        }
-
-        _context.Users.Remove(userDb);
-        _context.SaveChanges();
-
-        return Results.Ok($"Usuario com ID {id} excluido com sucesso!");
+        _userService.Remove(id);
+        return Results.NoContent();
     }
 }
