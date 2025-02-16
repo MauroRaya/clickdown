@@ -2,7 +2,7 @@ namespace clickdown.Services;
 
 public class TokenService
 {
-    public string GenerateToken(User user)
+    public static string GenerateToken(User user)
     {
         var handler = new JwtSecurityTokenHandler();
 

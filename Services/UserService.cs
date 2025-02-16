@@ -23,7 +23,7 @@ public class UserService
             null : User.CreateDto(userDb);
     }
     
-    public User Add(UserViewModel userVm)
+    public User Register(UserViewModel userVm)
     {
         byte[] salt = HashingService.GenerateSalt();
         string hash = HashingService.HashPassword(userVm.Password, salt);
@@ -33,6 +33,22 @@ public class UserService
         _context.SaveChanges();
 
         return newUser;
+    }
+    
+    public string? Login(UserViewModel userVm)
+    {
+        User? userDb = _context
+            .Users
+            .FirstOrDefault(u => u.Email == userVm.Email);
+
+        if (userDb is null) return null;
+
+        byte[] salt = Convert.FromHexString(userDb.Salt);
+        string hash = HashingService.HashPassword(userVm.Password, salt);
+
+        if (hash != userDb.Hash) return null;
+        
+        return TokenService.GenerateToken(userDb);
     }
     
     public User? Update(int id, UserViewModel userVm)

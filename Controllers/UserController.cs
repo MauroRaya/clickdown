@@ -26,14 +26,22 @@ public class UserController : ControllerBase
         return user is null ? Results.NotFound() : Results.Ok(user);
     }
 
-    [HttpPost]
+    [HttpPost("register")]
     public IResult Post(
         [FromBody] UserViewModel user)
     {
-        User newUser = _userService.Add(user);
+        User newUser = _userService.Register(user);
         return Results.Created($"api/user/{newUser.Id}", newUser);
     }
 
+    [HttpPost("login")]
+    public IResult Login(
+        [FromBody] UserViewModel userVm)
+    {
+        string? token = _userService.Login(userVm);
+        return token is null ? Results.Unauthorized() : Results.Ok(token);
+    }
+    
     [HttpPut("{id}")]
     public IResult Put(
         [FromRoute] int id,
