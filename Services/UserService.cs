@@ -11,47 +11,22 @@ public class UserService
     
     public List<UserDto> Get()
     {
-        var usersDb = _context.Users.ToList();
-
-        var usersDto = new List<UserDto>();
-
-        foreach (var user in usersDb)
-        {
-            usersDto.Add(new UserDto
-            {
-                Id = user.Id,
-                Username = user.Username
-            });
-        }
-
-        return usersDto;
+        return _context.Users
+            .Select(UserDto.CreateUserDto)
+            .ToList();
     }
     
     public UserDto? GetById(int id)
     {
-        var userDb = _context.Users.Find(id);
-
-        if (userDb is null)
-        {
-            return null;
-        }
-
-        return new UserDto
-        {
-            Id = userDb.Id,
-            Username = userDb.Username
-        };
+        User? userDb = _context.Users.Find(id);
+        return userDb is null ?
+            null : UserDto.CreateUserDto(userDb);
     }
     
-    public User Add(UserViewModel user)
+    public User Add(UserViewModel userVm)
     {
-        string hashedPassword = HashingService.GenerateHashedPassword(user.Password);
-
-        var newUser = new User
-        {
-            Username = user.Username,
-            Password = hashedPassword
-        };
+        User newUser = userVm.ToUser();
+        newUser.Password = HashingService.GenerateHashedPassword(userVm.Password);
 
         _context.Users.Add(newUser);
         _context.SaveChanges();
@@ -59,34 +34,25 @@ public class UserService
         return newUser;
     }
     
-    public User? Update(int id, UserViewModel user)
+    public User? Update(int id, UserViewModel userVm)
     {
-        var userDb = _context.Users.Find(id);
-
-        if (userDb is null)
-        {
-            return null;
-        }
+        User? userDb = _context.Users.Find(id);
+        if (userDb is null) return null;
         
-        string hashedPassword = HashingService.GenerateHashedPassword(user.Password);
-
-        userDb.Username = user.Username;
-        userDb.Password = hashedPassword;
+        userDb.UpdateFrom(userVm);
         _context.SaveChanges();
-
+        
         return userDb;
     }
     
-    public void Remove(int id)
+    public User? Remove(int id)
     {
-        var userDb = _context.Users.Find(id);
-
-        if (userDb is null)
-        {
-            return;
-        }
+        User? userDb = _context.Users.Find(id);
+        if (userDb is null) return null;
 
         _context.Users.Remove(userDb);
         _context.SaveChanges();
+        
+        return userDb;
     }
 }
