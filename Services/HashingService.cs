@@ -1,13 +1,23 @@
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-
 namespace clickdown.Services;
 
 public static class HashingService
 {
-    public static string GenerateHashedPassword(string password)
+    public static string HashPassword(string password, byte[] salt)
     {
-        byte[] bytes  = Encoding.UTF8.GetBytes(password);
-        byte[] hashed = SHA256.HashData(bytes);
+        byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+        byte[] saltedPassword = salt.Concat(passwordBytes).ToArray();
+        byte[] hashed = SHA256.HashData(saltedPassword);
+        
         return Convert.ToHexString(hashed);
+    }
+
+    public static byte[] GenerateSalt()
+    {
+        byte[] salt = new byte[16];
+        
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(salt);
+
+        return salt;
     }
 }

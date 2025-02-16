@@ -12,7 +12,7 @@ public class UserService
     public List<UserDto> Get()
     {
         return _context.Users
-            .Select(UserDto.CreateUserDto)
+            .Select(User.CreateDto)
             .ToList();
     }
     
@@ -20,13 +20,14 @@ public class UserService
     {
         User? userDb = _context.Users.Find(id);
         return userDb is null ?
-            null : UserDto.CreateUserDto(userDb);
+            null : User.CreateDto(userDb);
     }
     
     public User Add(UserViewModel userVm)
     {
-        User newUser = userVm.ToUser();
-        newUser.Password = HashingService.GenerateHashedPassword(userVm.Password);
+        byte[] salt = HashingService.GenerateSalt();
+        string hash = HashingService.HashPassword(userVm.Password, salt);
+        User newUser = userVm.ToUser(salt, hash);
 
         _context.Users.Add(newUser);
         _context.SaveChanges();
@@ -39,7 +40,10 @@ public class UserService
         User? userDb = _context.Users.Find(id);
         if (userDb is null) return null;
         
-        userDb.UpdateFrom(userVm);
+        byte[] salt = HashingService.GenerateSalt();
+        string hash = HashingService.HashPassword(userVm.Password, salt);
+        
+        userDb.UpdateFrom(userVm, salt, hash);
         _context.SaveChanges();
         
         return userDb;

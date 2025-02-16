@@ -6,3 +6,8 @@ global using System.Security.Cryptography;
 global using System.Text;
 global using Microsoft.AspNetCore.Mvc;
 global using clickdown.Services;
+global using System.IdentityModel.Tokens.Jwt;
+global using clickdown.Services.Config;
+global using Microsoft.IdentityModel.Tokens;
+global using Microsoft.AspNetCore.Mvc.Infrastructure;
+global using System.Security.Claims;
