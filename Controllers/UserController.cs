@@ -10,7 +10,7 @@ public class UserController : ControllerBase
     {
         _userService = userService;
     }
-
+    
     [HttpGet]
     public IResult Get()
     {
@@ -27,7 +27,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IResult Post(
+    public IResult Register(
         [FromBody] UserViewModel user)
     {
         User newUser = _userService.Register(user);
@@ -42,20 +42,24 @@ public class UserController : ControllerBase
         return token is null ? Results.Unauthorized() : Results.Ok(token);
     }
     
-    [HttpPut("{id}")]
-    public IResult Put(
-        [FromRoute] int id,
+    [Authorize]
+    [HttpPut("{targetId}")]
+    public IResult Update(
+        [FromRoute] int targetId,
         [FromBody] UserViewModel userVm)
     {
-        User? user = _userService.Update(id, userVm);
+        string? userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        User? user = _userService.Update(userId, targetId, userVm);
         return user is null ? Results.NotFound() : Results.Ok(user);
     }
 
-    [HttpDelete("{id}")]
+    [Authorize]
+    [HttpDelete("{targetId}")]
     public IResult Delete(
-        [FromRoute] int id)
+        [FromRoute] int targetId)
     {
-        User? user = _userService.Remove(id);
+        string? userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        User? user = _userService.Remove(userId, targetId);
         return user is null ? Results.NotFound() : Results.Ok(user);
     }
 }

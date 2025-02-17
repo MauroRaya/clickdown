@@ -1,8 +1,8 @@
-namespace clickdown.Services;
+namespace clickdown.Utils;
 
-public static class HashingService
+public static class HashingUtil
 {
-    public static string HashPassword(string password, byte[] salt)
+    public static string GenerateHash(string password, byte[] salt)
     {
         byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
         byte[] saltedPassword = salt.Concat(passwordBytes).ToArray();

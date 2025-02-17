@@ -7,7 +7,6 @@ public class User
     public string Username { get; set; } = string.Empty;
     public string Salt { get; set; } = string.Empty;
     public string Hash { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
     
     public static UserDto CreateDto(User user)
     {
@@ -25,7 +24,6 @@ public class User
         Username = userVm.Username;
         Salt = Convert.ToHexString(salt);
         Hash = hash;
-        Role = "Funcionario";
     }
 }
 
@@ -43,7 +41,6 @@ public class UserViewModel
             Username = this.Username,
             Salt = Convert.ToHexString(salt),
             Hash = hash,
-            Role = "Funcionario"
         };
     }
 }

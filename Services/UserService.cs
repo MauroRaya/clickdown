@@ -25,8 +25,8 @@ public class UserService
     
     public User Register(UserViewModel userVm)
     {
-        byte[] salt = HashingService.GenerateSalt();
-        string hash = HashingService.HashPassword(userVm.Password, salt);
+        byte[] salt = HashingUtil.GenerateSalt();
+        string hash = HashingUtil.GenerateHash(userVm.Password, salt);
         User newUser = userVm.ToUser(salt, hash);
 
         _context.Users.Add(newUser);
@@ -41,23 +41,30 @@ public class UserService
             .Users
             .FirstOrDefault(u => u.Email == userVm.Email);
 
-        if (userDb is null) return null;
+        if (userDb is null) 
+            return null;
 
         byte[] salt = Convert.FromHexString(userDb.Salt);
-        string hash = HashingService.HashPassword(userVm.Password, salt);
+        string hash = HashingUtil.GenerateHash(userVm.Password, salt);
 
-        if (hash != userDb.Hash) return null;
+        if (hash != userDb.Hash) 
+            return null;
         
-        return TokenService.GenerateToken(userDb);
+        return TokenUtil.GenerateToken(userDb);
     }
     
-    public User? Update(int id, UserViewModel userVm)
+    public User? Update(string userId, int targetId, UserViewModel userVm)
     {
-        User? userDb = _context.Users.Find(id);
-        if (userDb is null) return null;
+        if (!userId.IsNullOrEmpty() && Convert.ToInt32(userId) != targetId)
+            return null;
         
-        byte[] salt = HashingService.GenerateSalt();
-        string hash = HashingService.HashPassword(userVm.Password, salt);
+        User? userDb = _context.Users.Find(targetId);
+        
+        if (userDb is null) 
+            return null;
+        
+        byte[] salt = HashingUtil.GenerateSalt();
+        string hash = HashingUtil.GenerateHash(userVm.Password, salt);
         
         userDb.UpdateFrom(userVm, salt, hash);
         _context.SaveChanges();
@@ -65,10 +72,15 @@ public class UserService
         return userDb;
     }
     
-    public User? Remove(int id)
+    public User? Remove(string userId, int targetId)
     {
-        User? userDb = _context.Users.Find(id);
-        if (userDb is null) return null;
+        if (!userId.IsNullOrEmpty() && Convert.ToInt32(userId) != targetId)
+            return null;
+        
+        User? userDb = _context.Users.Find(targetId);
+        
+        if (userDb is null) 
+            return null;
 
         _context.Users.Remove(userDb);
         _context.SaveChanges();

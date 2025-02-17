@@ -1,6 +1,7 @@
 global using clickdown.Data;
 global using clickdown.Models;
 global using clickdown.Controllers;
+global using clickdown.Utils;
 global using Microsoft.EntityFrameworkCore;
 global using System.Security.Cryptography;
 global using System.Text;
@@ -11,3 +12,6 @@ global using clickdown.Services.Config;
 global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.AspNetCore.Mvc.Infrastructure;
 global using System.Security.Claims;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Authentication.JwtBearer;
+global using clickdown.Middlewares;
