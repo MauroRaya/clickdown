@@ -62,24 +62,4 @@ public class UserController : ControllerBase
         User? user = _userService.Remove(userId, targetId);
         return user is null ? Results.NotFound() : Results.Ok(user);
     }
-
-    [Authorize]
-    [HttpPost("workspace/create")]
-    public IResult CreateWorkspace(
-        [FromBody] WorkspaceViewModel workspaceVm)
-    {
-        string? userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        Workspace? workspace = _userService.CreateWorkspace(userId, workspaceVm);
-        return workspace is null ? Results.BadRequest() : Results.Ok(workspace);
-    }
-    
-    [Authorize]
-    [HttpDelete("workspace/delete/{workspaceId}")]
-    public IResult DeleteWorkspace(
-        [FromRoute] int workspaceId)
-    {
-        string? userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        Workspace? workspace = _userService.DeleteWorkspace(userId, workspaceId);
-        return workspace is null ? Results.BadRequest() : Results.Ok(workspace);
-    }
 }

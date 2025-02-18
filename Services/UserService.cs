@@ -87,41 +87,4 @@ public class UserService
         
         return userDb;
     }
-
-    public Workspace? CreateWorkspace(string? userId, WorkspaceViewModel workspaceVm)
-    {
-        if (userId.IsNullOrEmpty() || !int.TryParse(userId, out int intUserId))
-            return null;
-
-        Workspace workspace = workspaceVm.ToWorkspace();
-        _context.Workspaces.Add(workspace);
-        
-        Worker worker = new Worker
-        {
-            Id = intUserId,
-            Role = "Admin",
-            WorkspaceId = workspace.Id
-        };
-        
-        _context.Workers.Add(worker);
-        _context.SaveChanges();
-
-        return workspace;
-    }
-
-    public Workspace? DeleteWorkspace(string? userId, int workspaceId)
-    {
-        if (userId.IsNullOrEmpty() || !int.TryParse(userId, out int intUserId))
-            return null;
-        
-        Workspace? workspace = _context.Workspaces.Find(workspaceId);
-
-        if (workspace is null)
-            return null;
-
-        _context.Workspaces.Remove(workspace);
-        _context.SaveChanges();
-
-        return workspace;
-    }
 }
