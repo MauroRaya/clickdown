@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace clickdown.Models;
 
 public class User
@@ -43,7 +40,7 @@ public class UserViewModel
     public string Username { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "Password is required")]
-    [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+    [RegularExpression(@"^((?=.*[a-z])(?=.*[A-Z])(?=.*\d)).+$")]
     public string Password { get; set; } = string.Empty;
 
     public User ToUser(byte[] salt, string hash)

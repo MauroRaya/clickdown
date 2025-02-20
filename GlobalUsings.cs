@@ -15,3 +15,5 @@ global using System.Security.Claims;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using clickdown.Middlewares;
+global using System.ComponentModel.DataAnnotations;
+global using System.ComponentModel.DataAnnotations.Schema;

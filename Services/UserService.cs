@@ -43,7 +43,7 @@ public class UserService
         }
     }
 
-    public async Task<User> RegisterAsync(UserViewModel userVm)
+    public async Task<Result<User>> RegisterAsync(UserViewModel userVm)
     {
         try
         {
@@ -54,7 +54,7 @@ public class UserService
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
 
-            return newUser;
+            return Result<User>.NewSuccess(newUser);
         }
         catch (Exception)
         {

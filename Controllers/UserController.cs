@@ -36,8 +36,11 @@ public class UserController : ControllerBase
     public async Task<IActionResult> RegisterAsync(
         [FromBody] UserViewModel user)
     {
-        User newUser = await _userService.RegisterAsync(user);
-        return Created($"api/user/{newUser.Id}", newUser);
+        var result = await _userService.RegisterAsync(user);
+        
+        return result.Success
+            ? Created($"api/user/{result.Data?.Id}", result.Data)
+            : BadRequest(result.Error);
     }
 
     [HttpPost("login")]
