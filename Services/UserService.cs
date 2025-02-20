@@ -86,7 +86,7 @@ public class UserService
         }
     }
 
-    public async Task<Result<UserDto>> UpdateAsync(string userId, int targetId, UserViewModel userVm)
+    public async Task<Result<UserDto>> UpdateAsync(string? userId, int targetId, UserViewModel userVm)
     {
         try
         {
