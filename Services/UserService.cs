@@ -8,83 +8,136 @@ public class UserService
     {
         _context = context;
     }
-    
-    public List<UserDto> Get()
+
+    public async Task<Result<List<UserDto>>> GetAsync()
     {
-        return _context.Users
-            .Select(User.CreateDto)
-            .ToList();
+        try
+        {
+            List<UserDto> usersDto = await _context.Users
+                .Select(user => User.CreateDto(user))
+                .ToListAsync();
+
+            return usersDto.Count == 0
+                ? Result<List<UserDto>>.NewError("No users found")
+                : Result<List<UserDto>>.NewSuccess(usersDto);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
-    
-    public UserDto? GetById(int id)
+
+    public async Task<Result<UserDto>> GetByIdAsync(int id)
     {
-        User? userDb = _context.Users.Find(id);
-        return userDb is null ?
-            null : User.CreateDto(userDb);
+        try
+        {
+            User? userDb = await _context.Users.FindAsync(id);
+        
+            return userDb is null 
+                ? Result<UserDto>.NewError("User not found") 
+                : Result<UserDto>.NewSuccess(User.CreateDto(userDb));
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
-    
-    public User Register(UserViewModel userVm)
+
+    public async Task<User> RegisterAsync(UserViewModel userVm)
     {
-        byte[] salt = HashingUtil.GenerateSalt();
-        string hash = HashingUtil.GenerateHash(userVm.Password, salt);
-        User newUser = userVm.ToUser(salt, hash);
+        try
+        {
+            byte[] salt = HashingUtil.GenerateSalt();
+            string hash = HashingUtil.GenerateHash(userVm.Password, salt);
+            User newUser = userVm.ToUser(salt, hash);
 
-        _context.Users.Add(newUser);
-        _context.SaveChanges();
+            await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync();
 
-        return newUser;
+            return newUser;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
-    
-    public string? Login(UserViewModel userVm)
+
+    public async Task<Result<string?>> LoginAsync(UserViewModel userVm)
     {
-        User? userDb = _context
-            .Users
-            .FirstOrDefault(u => u.Email == userVm.Email);
+        try
+        {
+            User? userDb = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == userVm.Email);
 
-        if (userDb is null) 
-            return null;
+            if (userDb is null)
+                return Result<string?>.NewError("User not found");
 
-        byte[] salt = Convert.FromHexString(userDb.Salt);
-        string hash = HashingUtil.GenerateHash(userVm.Password, salt);
+            byte[] salt = Convert.FromHexString(userDb.Salt);
+            string hash = HashingUtil.GenerateHash(userVm.Password, salt);
 
-        if (hash != userDb.Hash) 
-            return null;
-        
-        return TokenUtil.GenerateToken(userDb);
+            if (hash != userDb.Hash)
+                return Result<string?>.NewError("Password does not match");
+            
+            return Result<string?>.NewSuccess(TokenUtil.GenerateToken(userDb));
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
-    
-    public User? Update(string userId, int targetId, UserViewModel userVm)
-    {
-        if (!userId.IsNullOrEmpty() && Convert.ToInt32(userId) != targetId)
-            return null;
-        
-        User? userDb = _context.Users.Find(targetId);
-        
-        if (userDb is null) 
-            return null;
-        
-        byte[] salt = HashingUtil.GenerateSalt();
-        string hash = HashingUtil.GenerateHash(userVm.Password, salt);
-        
-        userDb.UpdateFrom(userVm, salt, hash);
-        _context.SaveChanges();
-        
-        return userDb;
-    }
-    
-    public User? Remove(string? userId, int targetId)
-    {
-        if (!userId.IsNullOrEmpty() && Convert.ToInt32(userId) != targetId)
-            return null;
-        
-        User? userDb = _context.Users.Find(targetId);
-        
-        if (userDb is null) 
-            return null;
 
-        _context.Users.Remove(userDb);
-        _context.SaveChanges();
-        
-        return userDb;
+    public async Task<Result<UserDto>> UpdateAsync(string userId, int targetId, UserViewModel userVm)
+    {
+        try
+        {
+            if (!userId.IsNullOrEmpty())
+                return Result<UserDto>.NewError("User ID is required");
+            
+            if (Convert.ToInt32(userId) != targetId)
+                return Result<UserDto>.NewError("You dont have permission to update this user");
+
+            User? userDb = await _context.Users.FindAsync(targetId);
+
+            if (userDb is null)
+                return Result<UserDto>.NewError("User not found");
+
+            byte[] salt = HashingUtil.GenerateSalt();
+            string hash = HashingUtil.GenerateHash(userVm.Password, salt);
+
+            userDb.UpdateFrom(userVm, salt, hash);
+            await _context.SaveChangesAsync();
+
+            return Result<UserDto>.NewSuccess(User.CreateDto(userDb));
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<Result<UserDto>> RemoveAsync(string? userId, int targetId)
+    {
+        try
+        {
+            if (!userId.IsNullOrEmpty())
+                return Result<UserDto>.NewError("User ID is required");
+            
+            if (Convert.ToInt32(userId) != targetId)
+                return Result<UserDto>.NewError("You don't have permission to delete this user");
+
+            User? userDb = await _context.Users.FindAsync(targetId);
+
+            if (userDb is null)
+                return Result<UserDto>.NewError("User not found");
+
+            _context.Users.Remove(userDb);
+            await _context.SaveChangesAsync();
+
+            return Result<UserDto>.NewSuccess(User.CreateDto(userDb));
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 }
