@@ -2,7 +2,7 @@ namespace clickdown.Services;
 
 public class UserService
 {
-    private AppDbContext _context;
+    private readonly AppDbContext _context;
 
     public UserService(AppDbContext context)
     {

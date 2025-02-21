@@ -9,12 +9,6 @@ public class WorkspaceService
         _context = context;
     }
     
-    //TEMPORARIO
-    public List<Worker> Gett()
-    {
-        return _context.Workers.ToList();
-    }
-    
     public List<Workspace> Get()
     {
         return _context.Workspaces.ToList();

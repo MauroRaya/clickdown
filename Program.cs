@@ -26,6 +26,7 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 app.UseMiddleware<TokenValidationMiddleware>();
+app.UseMiddleware<DevEnvironmentMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

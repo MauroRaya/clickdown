@@ -15,14 +15,6 @@ public class WorkspaceController
         _httpContextAccessor = httpContextAccessor;
     }
     
-    //TEMPORARIO
-    [HttpGet("workers")]
-    public IResult Gett()
-    {
-        List<Worker> workers = _workspaceService.Gett();
-        return Results.Ok(workers);
-    }
-    
     [HttpGet]
     public IResult Get()
     {

@@ -2,7 +2,7 @@ namespace clickdown.Middlewares;
 
 public class TokenValidationMiddleware
 {
-    private RequestDelegate _next;
+    private readonly RequestDelegate _next;
 
     public TokenValidationMiddleware(RequestDelegate next)
     {
@@ -18,7 +18,9 @@ public class TokenValidationMiddleware
             "/api/user/login",
         };
 
-        if (publicPaths.Any(p => context.Request.Path.StartsWithSegments(p, StringComparison.OrdinalIgnoreCase)))
+        if (publicPaths.Any(p =>
+                context.Request.Path.StartsWithSegments(p, StringComparison.OrdinalIgnoreCase))
+            ||  context.Request.Path.Value.Equals("/"))
         {
             await _next(context);
             return;
@@ -30,10 +32,12 @@ public class TokenValidationMiddleware
             .FirstOrDefault()?
             .Split(' ')
             .Last();
+        
+        Console.WriteLine($"Token: {token}");
 
         if (token.IsNullOrEmpty())
         {
-            await ReturnErrorResponse(context, "Token is required");
+            await ResponseUtil.ReturnErrorResponse(context, "Token is required");
             return;
         }
         
@@ -41,21 +45,11 @@ public class TokenValidationMiddleware
 
         if (principal is null)
         {
-            await ReturnErrorResponse(context, "Token is invalid");
+            await ResponseUtil.ReturnErrorResponse(context, "Token is invalid");
             return;
         }
 
         context.User = principal;
         await _next(context);
-    }
-
-    public async Task ReturnErrorResponse(HttpContext context, string errorMessage)
-    {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        context.Response.ContentType = "Application/json";
-
-        var response = Result<string>.NewError(errorMessage);
-
-        await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
     }
 }
