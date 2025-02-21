@@ -17,8 +17,8 @@ public class UserController : ControllerBase
         var result = await _userService.GetAsync();
         
         return result.Success
-            ? Ok(result.Data)
-            : BadRequest(result.Error);
+            ? Ok(result)
+            : BadRequest(result);
     }
 
     [HttpGet("{id}")]
@@ -28,8 +28,8 @@ public class UserController : ControllerBase
         var result = await _userService.GetByIdAsync(id);
         
         return result.Success
-            ? Ok(result.Data)
-            : NotFound(result.Error);
+            ? Ok(result)
+            : NotFound(result);
     }
 
     [HttpPost("register")]
@@ -40,7 +40,7 @@ public class UserController : ControllerBase
         
         return result.Success
             ? Created($"api/user/{result.Data?.Id}", result.Data)
-            : BadRequest(result.Error);
+            : BadRequest(result);
     }
 
     [HttpPost("login")]
@@ -50,8 +50,8 @@ public class UserController : ControllerBase
         var result = await _userService.LoginAsync(userVm);
         
         return result.Success
-            ? Ok(result.Data)
-            : BadRequest(result.Error);
+            ? Ok(result)
+            : BadRequest(result);
     }
 
     [Authorize]
@@ -64,8 +64,8 @@ public class UserController : ControllerBase
         var result = await _userService.UpdateAsync(userId, targetId, userVm);
 
         return result.Success
-            ? Ok(result.Data)
-            : BadRequest(result.Error);
+            ? Ok(result)
+            : BadRequest(result);
     }
 
     [Authorize]
@@ -77,7 +77,7 @@ public class UserController : ControllerBase
         var result = await _userService.RemoveAsync(userId, targetId);
 
         return result.Success
-            ? Ok(result.Data)
-            : NotFound(result.Error);
+            ? Ok(result)
+            : NotFound(result);
     }
 }

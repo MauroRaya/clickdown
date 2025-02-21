@@ -4,6 +4,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=Data/app.db"));
 
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WorkspaceService>();
 
@@ -18,13 +19,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false
         };
     });
+
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-app.MapControllers();
 app.UseMiddleware<TokenValidationMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 app.MapGet("api/ping", () => "pong");
 
 app.Run();

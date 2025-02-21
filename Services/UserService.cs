@@ -17,7 +17,7 @@ public class UserService
                 .Select(user => User.CreateDto(user))
                 .ToListAsync();
 
-            return usersDto.Count == 0
+            return usersDto.Count.Equals(0)
                 ? Result<List<UserDto>>.NewError("No users found")
                 : Result<List<UserDto>>.NewSuccess(usersDto);
         }
@@ -67,7 +67,7 @@ public class UserService
         try
         {
             User? userDb = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == userVm.Email);
+                .FirstOrDefaultAsync(u => u.Email.Equals(userVm.Email));
 
             if (userDb is null)
                 return Result<string?>.NewError("User not found");
@@ -75,7 +75,7 @@ public class UserService
             byte[] salt = Convert.FromHexString(userDb.Salt);
             string hash = HashingUtil.GenerateHash(userVm.Password, salt);
 
-            if (hash != userDb.Hash)
+            if (!hash.Equals(userDb.Hash))
                 return Result<string?>.NewError("Password does not match");
             
             return Result<string?>.NewSuccess(TokenUtil.GenerateToken(userDb));
@@ -90,16 +90,16 @@ public class UserService
     {
         try
         {
-            if (!userId.IsNullOrEmpty())
+            if (userId.IsNullOrEmpty())
                 return Result<UserDto>.NewError("User ID is required");
             
-            if (Convert.ToInt32(userId) != targetId)
-                return Result<UserDto>.NewError("You dont have permission to update this user");
-
             User? userDb = await _context.Users.FindAsync(targetId);
 
             if (userDb is null)
                 return Result<UserDto>.NewError("User not found");
+            
+            if (!Convert.ToInt32(userId).Equals(targetId))
+                return Result<UserDto>.NewError("You dont have permission to update this user");
 
             byte[] salt = HashingUtil.GenerateSalt();
             string hash = HashingUtil.GenerateHash(userVm.Password, salt);
@@ -119,16 +119,16 @@ public class UserService
     {
         try
         {
-            if (!userId.IsNullOrEmpty())
+            if (userId.IsNullOrEmpty())
                 return Result<UserDto>.NewError("User ID is required");
             
-            if (Convert.ToInt32(userId) != targetId)
-                return Result<UserDto>.NewError("You don't have permission to delete this user");
-
             User? userDb = await _context.Users.FindAsync(targetId);
 
             if (userDb is null)
                 return Result<UserDto>.NewError("User not found");
+            
+            if (!Convert.ToInt32(userId).Equals(targetId))
+                return Result<UserDto>.NewError("You don't have permission to delete this user");
 
             _context.Users.Remove(userDb);
             await _context.SaveChangesAsync();

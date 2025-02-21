@@ -17,3 +17,4 @@ global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using clickdown.Middlewares;
 global using System.ComponentModel.DataAnnotations;
 global using System.ComponentModel.DataAnnotations.Schema;
+global using Newtonsoft.Json;

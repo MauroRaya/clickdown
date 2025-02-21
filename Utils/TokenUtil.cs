@@ -40,7 +40,8 @@ public class TokenUtil
         var handler = new JwtSecurityTokenHandler();
         byte[] key = Encoding.UTF8.GetBytes(Configuration.PrivateKey);
 
-        if (key.IsNullOrEmpty()) return null;
+        if (key.IsNullOrEmpty()) 
+            return null;
 
         try
         {
@@ -56,7 +57,7 @@ public class TokenUtil
             var principal = handler.ValidateToken(token, validation, out _);
             return principal;
         }
-        catch
+        catch (Exception)
         {
             return null;
         }
